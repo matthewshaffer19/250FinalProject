@@ -7,6 +7,7 @@
 import sys
 import os
 import sqlite3
+import math
 
 running = True
 
@@ -102,14 +103,36 @@ while running == True:
     conn = sqlite3.connect('extracted')
     tableName = dataSource[:-4]
     
-    print("---------------------------------------------")
-    print("|" + " " * (7 - len(summarizeOne)) + summarizeOne + "  |                                 |")
-    print("|-------------------------------------------|")
+    
     
     if(plotType == "text"):
         if(summarizeTwo != ""):
-            print("text")
+            frontSpace = int((33 - len(summarizeTwo)) / 2)
+            backSpace = 33 - len(summarizeTwo) - frontSpace
+            print("---------------------------------------------")
+            print("|" + " " * (7 - len(summarizeOne)) + summarizeOne + "  |" + " " * frontSpace + summarizeTwo + " " * backSpace + "|")
+            print("|-------------------------------------------|")
+            rowOneVals = conn.execute("SELECT DISTINCT " + summarizeOne + " FROM " + tableName + " ORDER BY " + summarizeOne + ";" ).fetchall()
+            rowTwoVals = []
+            counter = 0
+            for val in rowOneVals:
+                valToPrint = conn.execute("SELECT AVG(" + summarizeTwo + ")" + " FROM " + tableName + " WHERE " + summarizeOne + " LIKE '" + val[0] + "' ;")
+                for val2 in valToPrint:
+                    rowTwoVals.append(val2[0])
+                #print(val[0])
+                counter += 1
+            multiplier = 32 / max(rowTwoVals)
+            counter = 0
+            for val in rowOneVals:
+                valPounds = math.ceil(multiplier * rowTwoVals[counter])
+                valSpaces = 32 - valPounds
+                print("|" + " " * (7 - len(val[0])) + val[0] + "  | " + "#" * valPounds + " " * valSpaces + "|")
+                counter += 1
+            print("---------------------------------------------")
         else:
+            print("---------------------------------------------")
+            print("|" + " " * (7 - len(summarizeOne)) + summarizeOne + "  |                                 |")
+            print("|-------------------------------------------|")
             rowOneVals = conn.execute("SELECT DISTINCT " + summarizeOne + " FROM " + tableName + " ORDER BY " + summarizeOne + ";" ).fetchall()
             rowTwoVals = []
             counter = 0
