@@ -156,12 +156,12 @@ while running == True:
             print("graphical")
         #else:
     
-    conn.execute("DROP TABLE d;")
+#Run a query to grab all tables in a database then loop through the results and drop all of them.
+    all_tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    for table in all_tables:
+	    conn.execute("DROP TABLE " + table[0])
     conn.commit()
     conn.close()
     
     running = False
-
-    
-    
 
