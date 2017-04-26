@@ -32,7 +32,7 @@ def extractor(file):
 	conn = sqlite3.connect('extracted')
 
 	#Use a loop to build a create statement
-	create_statement = "CREATE TABLE " + table_name + "("
+	create_statement = "CREATE TABLE IF NOT EXISTS " + table_name + "("
 	for title in titles:
 		create_statement +=  title.strip('"') + " TEXT,"
 
