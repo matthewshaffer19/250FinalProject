@@ -8,6 +8,9 @@ import sys
 import os
 import sqlite3
 import math
+import matplotlib.pyplot as plt; plt.rcdefaults()
+import matplotlib.pyplot as plt
+import numpy
 
 running = True
 
@@ -153,9 +156,51 @@ while running == True:
     
     if(plotType == "graphical"):
         if(summarizeTwo != ""):
-            print("graphical")
-        #else:
-    
+            rowOneVals = conn.execute("SELECT DISTINCT " + summarizeOne + " FROM " + tableName + " ORDER BY " + summarizeOne).fetchall()
+            rowTwoVals = []
+            for val in rowOneVals:
+                valToPrint = conn.execute("SELECT AVG(" + summarizeTwo + ")" + " FROM " + tableName + " WHERE " + summarizeOne + " LIKE '" + val[0] + "' ;")
+                for val2 in valToPrint:
+                    rowTwoVals.append(val2[0])
+
+            cleanRowOneVals = []
+            for i in rowOneVals:
+                cleanRowOneVals.append(str(i).strip('''' (),' '''))
+
+            cleanRowOneVals = tuple(cleanRowOneVals)
+
+            bar_coords = numpy.arange(len(cleanRowOneVals))
+
+            plt.bar(bar_coords, rowTwoVals, align='center', alpha=1.0, tick_label=cleanRowOneVals)
+
+            plt.ylabel(summarizeTwo)
+            plt.xlabel(summarizeOne)
+
+            plt.show()
+   
+        else:
+            rowOneVals = conn.execute("SELECT DISTINCT " + summarizeOne + " FROM " + tableName  + " ORDER BY " + summarizeOne).fetchall()
+            rowTwoVals = []
+            for val in rowOneVals:
+                valToPrint = conn.execute("SELECT COUNT(" + summarizeOne + ")" + " FROM " + tableName + " WHERE " + summarizeOne + " LIKE '" + val[0] + "' ;")
+                for val2 in valToPrint:
+                    rowTwoVals.append(val2[0])
+            
+            cleanRowOneVals = []
+            for i in rowOneVals:
+                cleanRowOneVals.append(str(i).strip('''' (),' '''))
+
+            cleanRowOneVals = tuple(cleanRowOneVals)
+
+            bar_coords = numpy.arange(len(cleanRowOneVals))
+
+            plt.bar(bar_coords, rowTwoVals, align='center', alpha=1.0, tick_label=cleanRowOneVals)
+
+            plt.ylabel('Quantity')
+            plt.xlabel(summarizeOne)
+
+            plt.show()
+
 #Run a query to grab all tables in a database then loop through the results and drop all of them.
     all_tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
     for table in all_tables:
@@ -164,4 +209,3 @@ while running == True:
     conn.close()
     
     running = False
-
