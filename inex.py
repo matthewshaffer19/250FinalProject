@@ -28,14 +28,16 @@ def extractor(file):
     #Grab the first line and split it on commas to get each atribute for the table we build
     titles = f.readline().strip().split(',')
     #Change the first element from an empty string to PK referencing Primary Key (This may not be necessay but it makes it cleaner IMO)
-    titles[0] = 'PK'
+    titles[0] = 'pk'
 
-    #Connect the the DB
+    #Connect to the DB
     conn = sqlite3.connect('extracted')
 
     #Use a loop to build a create statement
     create_statement = "CREATE TABLE IF NOT EXISTS " + table_name + "("
     for title in titles:
+        temp = title.split('.')
+        title = ''.join(temp)
         create_statement +=  title.strip('"') + " TEXT,"
 
     #Strip the final comma that we added with our loop
@@ -49,8 +51,10 @@ def extractor(file):
     
     #Populate the table by creating inserts for each line
     for line in f:
-        #Make sure to replace the NA with no quotes to an NA with quotes or command will not be accepted as valid
+        #Make sure to replace the NA and FALSE and TRUE with no quotes to an NA and FALSE and TRUE with quotes or command will not be accepted as valid. This has to do with how Sqlite handles Booleans strangely
         line = line.replace("NA", '"NA"')
+        line = line.replace("FALSE", '"FALSE"')
+        line = line.replace("TRUE", '"TRUE"')
         #execute the insert statement
         conn.execute("INSERT INTO " + table_name + " VALUES (" + line +")")
 
