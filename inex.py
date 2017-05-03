@@ -1,9 +1,13 @@
 #
 # Authors: Matthew Shaffer and Luc Zbonack
 # Description:
-#   This code is designed to take in a csv file and draw conclusions about the data within it.
+#   This code is designed to take in a csv file and aide the user in drawing conclusions about 
+#   the data within it. Initially, it allows the user to specify the CSV file to use.
+#   Then it gives the user the option to summarize the data either with one or two columns. 
+#   Similarly, it gives the user the option to summarize the data graphically or in a text based view.
 #
 
+#Import statements necessary to run program
 import sys
 import os
 import sqlite3
@@ -12,6 +16,7 @@ import matplotlib.pyplot as plt; plt.rcdefaults()
 import matplotlib.pyplot as plt
 import numpy
 
+#Instance variables required for the program to run
 running = True
 valid = False
 toSummarize = []
@@ -121,47 +126,68 @@ while running == True:
     
     #Generate the text plot
     if(plotType == "text"):
+        #Case when the plot is for two columns
         if(summarizeTwo != ""):
+            #Variables that hold the amount of spaces needed in the top of the table
             frontSpace = int((33 - len(summarizeTwo)) / 2)
             backSpace = 33 - len(summarizeTwo) - frontSpace
+            #Print the top of the table
             print("---------------------------------------------")
             print("|" + " " * (7 - len(summarizeOne)) + summarizeOne + "  |" + " " * frontSpace + summarizeTwo + " " * backSpace + "|")
             print("|-------------------------------------------|")
+            #Get values from the data set that will be analyzed
             rowOneVals = conn.execute("SELECT DISTINCT " + summarizeOne + " FROM " + tableName + " ORDER BY " + summarizeOne + ";" ).fetchall()
+            #Setup values to be used in the following for loop
             rowTwoVals = []
             counter = 0
+            #Place these values into an array is accessible in INEX
             for val in rowOneVals:
+                #Get average of the values for the specified column
                 valToPrint = conn.execute("SELECT AVG(" + summarizeTwo + ")" + " FROM " + tableName + " WHERE " + summarizeOne + " LIKE '" + val[0] + "' ;")
+                #Add these values to the previously declared array
                 for val2 in valToPrint:
                     rowTwoVals.append(val2[0])
-                #print(val[0])
                 counter += 1
+            #Print the body of the table that includes the column summaries, pound signs and spaces
             multiplier = 32 / max(rowTwoVals)
             counter = 0
+            #Loop through the possible rows in the table
             for val in rowOneVals:
+                #Numbers that hold the amount of pounds and spaces a row should have
                 valPounds = math.ceil(multiplier * rowTwoVals[counter])
                 valSpaces = 32 - valPounds
+                #Print the actual row
                 print("|" + " " * (7 - len(val[0])) + val[0] + "  | " + "#" * valPounds + " " * valSpaces + "|")
                 counter += 1
             print("---------------------------------------------")
+        #Case when the plot is only for one column
         else:
+            #Print the top of the table
             print("---------------------------------------------")
             print("|" + " " * (7 - len(summarizeOne)) + summarizeOne + "  |                                 |")
             print("|-------------------------------------------|")
+            #Get values from the data set that will be analyzed
             rowOneVals = conn.execute("SELECT DISTINCT " + summarizeOne + " FROM " + tableName + " ORDER BY " + summarizeOne + ";" ).fetchall()
+            #Setup values to be used in the following for loop
             rowTwoVals = []
             counter = 0
+            #Place these values into an array is accessible in INEX
             for val in rowOneVals:
+                #Get count of the values for the specified column
                 valToPrint = conn.execute("SELECT COUNT(" + summarizeOne + ")" + " FROM " + tableName + " WHERE " + summarizeOne + " LIKE '" + val[0] + "' ;")
+                #Add these values to the previously declared array
                 for val2 in valToPrint:
                     rowTwoVals.append(val2[0])
-                #print(val[0])
                 counter += 1
+            #Print the body of the table that includes the column summaries, pound signs and spaces
             multiplier = 32 / max(rowTwoVals)
             counter = 0
+            #Loop through the possible rows in the table
             for val in rowOneVals:
+                #Numbers that hold the amount of pounds and spaces a row should have
                 valPounds = int(multiplier * rowTwoVals[counter])
                 valSpaces = 32 - valPounds
+                #Print the actual row
                 print("|" + " " * (7 - len(val[0])) + val[0] + "  | " + "#" * valPounds + " " * valSpaces + "|")
                 counter += 1
             print("---------------------------------------------")
@@ -241,7 +267,7 @@ while running == True:
             #Display the chart
             plt.show()
 
-#Run a query to grab all tables in a database then loop through the results and drop all of them.
+    #Run a query to grab all tables in a database then loop through the results and drop all of them.
     all_tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
     for table in all_tables:
         conn.execute("DROP TABLE " + table[0])
